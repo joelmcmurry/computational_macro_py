@@ -5,14 +5,13 @@ Adapted from Sargent and Stachurski Quantitative Economics Lectures
 """
 
 import time
+import numba
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy import log
+from numba import jit
 from scipy.optimize import fminbound
 from scipy import interp
-
-import quantecon as qe
-from quantecon import compute_fixed_point
 
 start_time = time.time()
 
@@ -46,25 +45,29 @@ def bellman_operator(w):
 
     return Tw
 
- # Start with an initial guess for the value function and iteratively apply the Bellman Operator
- # until convergence
+ # Find a fixed point of the Bellman Operator (it is a contraction so we are guaranteed existence)
 
-w = np.zeros(grid_size)
+@jit
+def fixed_point(T,error_tol,max_iter):
 
-error_tol = 0.0001
-max_iter = 1000
+    # Start with an initial guess for the value function and iteratively apply the Bellman Operator
+    # until convergence
 
-iterate = 0
-error = error_tol + 1
+    w = np.zeros(grid_size)
 
-while iterate < max_iter and error > error_tol:
-    w_next = bellman_operator(w)
-    iterate += 1
-    error = np.max(np.abs(w_next - w))
-    w = w_next
-    print(iterate)
+    iterate = 0
+    error = error_tol + 1
 
-v_star = w
+    while iterate < max_iter and error > error_tol:
+        w_next = bellman_operator(w)
+        iterate += 1
+        error = np.max(np.abs(w_next - w))
+        w = w_next
+        print(iterate)
+
+    return w_next
+
+v_star = fixed_point(bellman_operator,0.0001,1000)
 
 # Obtain policy function
 
