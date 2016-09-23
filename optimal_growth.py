@@ -4,11 +4,17 @@ This program generates the value function and decision rules for a nonstochastic
 Adapted from Sargent and Stachurski Quantitative Economics Lectures
 """
 
+import time
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy import log
 from scipy.optimize import fminbound
 from scipy import interp
+
+import quantecon as qe
+from quantecon import compute_fixed_point
+
+start_time = time.time()
 
 # Parameters
 
@@ -76,6 +82,9 @@ def policy_function(w):
     return policy
 
 policyfunction = policy_function(v_star)
+
+elapsed_time = time.time() - start_time
+print(elapsed_time)
 
 # Plots
 
