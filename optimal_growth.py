@@ -1,12 +1,14 @@
-# Program Name: optimal_growth.py
-# This program generates the value function and decision rules for a nonstochastic growth model
-# Adapted from Sargent and Stachurski Quantitative Economics Lectures
+"""
+Program Name: optimal_growth.py
+This program generates the value function and decision rules for a nonstochastic growth model
+Adapted from Sargent and Stachurski Quantitative Economics Lectures
+"""
 
 import numpy as np
+import matplotlib.pyplot as plt
 from numpy import log
 from scipy.optimize import fminbound
 from scipy import interp
-import matplotlib.pyplot as plt
 
 # Parameters
 
@@ -26,12 +28,14 @@ def bellman_operator(w):
     # defined on the grid points and solves max[u(k,k') + beta*w(k')] where k' is chosen
     # from the interpolated grid points
 
+    # Exploit the monotonicity of the policy rule to only search for k' > k
+
     Aw = lambda x: interp(x,grid,w)
 
     Tw = np.empty(grid_size)
     for i, k in enumerate(grid):
         objective = lambda kprime: - log(k**alpha + (1-delta)*k-kprime) - beta * Aw(kprime)
-        kprime_star = fminbound(objective, 1e-6, k**alpha+(1-delta)*k)
+        kprime_star = fminbound(objective, k, k**alpha+(1-delta)*k)
         Tw[i] = - objective(kprime_star)
 
     return Tw
@@ -42,7 +46,7 @@ def bellman_operator(w):
 w = np.zeros(grid_size)
 
 error_tol = 0.0001
-max_iter = 10000
+max_iter = 1000
 
 iterate = 0
 error = error_tol + 1
@@ -52,6 +56,7 @@ while iterate < max_iter and error > error_tol:
     iterate += 1
     error = np.max(np.abs(w_next - w))
     w = w_next
+    print(iterate)
 
 v_star = w
 
@@ -77,7 +82,7 @@ policyfunction = policy_function(v_star)
 # Value Function
 
 fig, ax = plt.subplots()
-ax.set_ylim(0, 80)
+ax.set_ylim(30, 120)
 ax.set_xlim(np.min(grid), np.max(grid))
 lb = 'Value Function'
 ax.plot(grid, v_star, color=plt.cm.jet(0), lw=2, alpha=0.6, label=lb)
