@@ -39,7 +39,8 @@ def bellman_operator(w):
 
     Tw = np.empty(grid_size)
     for i, k in enumerate(grid):
-        objective = lambda kprime: - log(k**alpha + (1-delta)*k-kprime) - beta * Aw(kprime)
+        def objective(kprime):
+            return - log(k**alpha + (1-delta)*k-kprime) - beta * Aw(kprime)
         kprime_star = fminbound(objective, k, k**alpha+(1-delta)*k)
         Tw[i] = - objective(kprime_star)
 
@@ -63,7 +64,7 @@ def fixed_point(T,error_tol,max_iter):
         iterate += 1
         error = np.max(np.abs(w_next - w))
         w = w_next
-        print(iterate)
+        print(iterate,error)
 
     return w_next
 
